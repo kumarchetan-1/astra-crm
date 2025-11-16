@@ -1,0 +1,62 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-astro}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-astro_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-astra_db}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  db-init:
+    image: postgres:15
+    depends_on:
+      - postgres
+    volumes:
+      - .:/workspace:ro
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://astro:astro_pass@postgres:5432/astra_db}
+      INITIAL_DB_SQL: ${INITIAL_DB_SQL:-}
+    entrypoint: ["/bin/sh","/workspace/scripts/init-db.sh"]
+
+  http-backend:
+    build:
+      context: ./apps/http-backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://astro:astro_pass@postgres:5432/astra_db}
+      HTTP_BACKEND_PORT: ${HTTP_BACKEND_PORT:-4000}
+      JWT_SECRET: ${JWT_SECRET:-supersecret_jwt}
+    depends_on:
+      - postgres
+    ports:
+      - "${HTTP_BACKEND_PORT:-4000}:4000"
+
+  ws-backend:
+    build:
+      context: ./apps/ws-backend
+      dockerfile: Dockerfile
+    environment:
+      WS_BACKEND_PORT: ${WS_BACKEND_PORT:-5000}
+    ports:
+      - "${WS_BACKEND_PORT:-5000}:5000"
+    depends_on:
+      - http-backend
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    environment:
+      NEXT_PUBLIC_HTTP_BACKEND_URL: ${NEXT_PUBLIC_HTTP_BACKEND_URL:-http://host.docker.internal:4000}
+      NEXT_PUBLIC_WS: ${NEXT_PUBLIC_WS:-ws://host.docker.internal:5000}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      - http-backend
+
+volumes:
+  postgres-data:

@@ -1,0 +1,10 @@
+# convenience file - builds apps/web
+FROM node:18-alpine
+WORKDIR /app
+COPY apps/web/package*.json ./apps/web/
+RUN cd apps/web && npm ci --silent
+COPY . .
+WORKDIR /app/apps/web
+RUN npm run build
+EXPOSE 3000
+CMD ["npm","start"]
