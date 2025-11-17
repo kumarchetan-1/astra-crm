@@ -1,4 +1,4 @@
-version: '3.8'
+version: '1'
 services:
   postgres:
     image: postgres:15
@@ -20,12 +20,12 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://astro:astro_pass@postgres:5432/astra_db}
       INITIAL_DB_SQL: ${INITIAL_DB_SQL:-}
-    entrypoint: ["/bin/sh","/workspace/scripts/init-db.sh"]
+    entrypoint: ["/bin/bash","/workspace/scripts/init-db.sh"]
 
   http-backend:
     build:
-      context: ./apps/http-backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./apps/http-backend/Dockerfile
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://astro:astro_pass@postgres:5432/astra_db}
       HTTP_BACKEND_PORT: ${HTTP_BACKEND_PORT:-4000}
@@ -40,9 +40,9 @@ services:
       context: ./apps/ws-backend
       dockerfile: Dockerfile
     environment:
-      WS_BACKEND_PORT: ${WS_BACKEND_PORT:-5000}
+      WS_BACKEND_PORT: ${WS_BACKEND_PORT:-5001}
     ports:
-      - "${WS_BACKEND_PORT:-5000}:5000"
+      - "${WS_BACKEND_PORT:-5001}:5001"
     depends_on:
       - http-backend
 
@@ -52,7 +52,7 @@ services:
       dockerfile: Dockerfile
     environment:
       NEXT_PUBLIC_HTTP_BACKEND_URL: ${NEXT_PUBLIC_HTTP_BACKEND_URL:-http://host.docker.internal:4000}
-      NEXT_PUBLIC_WS: ${NEXT_PUBLIC_WS:-ws://host.docker.internal:5000}
+      NEXT_PUBLIC_WS: ${NEXT_PUBLIC_WS:-ws://host.docker.internal:5001}
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:

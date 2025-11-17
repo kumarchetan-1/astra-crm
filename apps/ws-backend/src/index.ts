@@ -2,7 +2,7 @@ import WebSocket, { WebSocketServer } from 'ws';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const wss = new WebSocketServer({ port: Number(process.env.WS_BACKEND_PORT) || 5000 });
+const wss = new WebSocketServer({ port: Number(process.env.WS_BACKEND_PORT) || 5001 });
 
 wss.on('connection', (ws) => {
   ws.on('message', (message) => {
@@ -28,4 +28,4 @@ wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ type: 'welcome', now: new Date().toISOString() }));
 });
 
-console.log('ws-backend listening on port', process.env.WS_BACKEND_PORT || 5000);
+console.log('ws-backend listening on port', process.env.WS_BACKEND_PORT || 5001);

@@ -1,3 +1,4 @@
+import React from 'react';
 import useSWR from 'swr';
 import { useState, useEffect } from 'react';
 
@@ -7,7 +8,7 @@ export default function Home() {
   const { data: leads } = useSWR('/api/proxy/leads', fetcher);
   const [wsStatus, setWsStatus] = useState('disconnected');
   useEffect(() => {
-    const ws = new WebSocket((process.env.NEXT_PUBLIC_WS || 'ws://localhost:5000'));
+    const ws = new WebSocket((process.env.NEXT_PUBLIC_WS || 'ws://localhost:5001'));
     ws.onopen = () => setWsStatus('open');
     ws.onmessage = (e) => {
       console.log('ws msg', e.data);
@@ -26,12 +27,20 @@ export default function Home() {
       <section style={{display:'grid', gridTemplateColumns:'1fr 320px', gap:24}}>
         <main>
           <div style={{display:'grid', gap:12}}>
-            {leads ? leads.map((l:any) => (
-              <div key={l.id} style={{padding:12, borderRadius:12, boxShadow:'0 6px 18px rgba(0,0,0,0.06)', background:'#fff'}}>
-                <div style={{fontWeight:600}}>{l.name}</div>
-                <div style={{fontSize:13, color:'#555'}}>{l.email} • {l.status}</div>
-              </div>
-            )) : <div>Loading leads...</div>}
+            {leads && Array.isArray(leads) ? (
+              leads.length > 0 ? (
+                leads.map((l:any) => (
+                  <div key={l.id} style={{padding:12, borderRadius:12, boxShadow:'0 6px 18px rgba(0,0,0,0.06)', background:'#fff'}}>
+                    <div style={{fontWeight:600}}>{l.name}</div>
+                    <div style={{fontSize:13, color:'#555'}}>{l.email} • {l.status}</div>
+                  </div>
+                ))
+              ) : (
+                <div>No leads found</div>
+              )
+            ) : (
+              <div>Loading leads...</div>
+            )}
           </div>
         </main>
         <aside>

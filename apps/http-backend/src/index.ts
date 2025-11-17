@@ -15,12 +15,17 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.get('/api/leads', async (req, res) => {
-  const leads = await prisma.lead.findMany({
-    include: { company: true, activities: true },
-    orderBy: { createdAt: 'desc' },
-    take: 50
-  });
-  res.json(leads);
+  try {
+    const leads = await prisma.lead.findMany({
+      include: { company: true, activities: true },
+      orderBy: { createdAt: 'desc' },
+      take: 50
+    });
+    res.json(leads);
+  } catch (err: any) {
+    console.error('Error fetching leads:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/leads', async (req, res) => {
@@ -38,8 +43,13 @@ app.post('/api/leads', async (req, res) => {
 });
 
 app.get('/api/companies', async (_req, res) => {
-  const companies = await prisma.company.findMany();
-  res.json(companies);
+  try {
+    const companies = await prisma.company.findMany();
+    res.json(companies);
+  } catch (err: any) {
+    console.error('Error fetching companies:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 const port = process.env.HTTP_BACKEND_PORT || 4000;

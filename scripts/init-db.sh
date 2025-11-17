@@ -9,13 +9,14 @@ echo "[init-db] Waiting for Postgres..."
 if [ -n "$DATABASE_URL" ]; then
   # export PG* variables for psql
   # DATABASE_URL format: postgres://user:pass@host:port/dbname
-  regex="postgres(?:ql)?:\/\/(?P<user>[^:]+):(?P<pass>[^@]+)@(?P<host>[^:]+):(?P<port>\d+)\/(?P<db>.+)"
+  # Bash regex doesn't support named groups, so we use positional groups
+  regex="postgres(ql)?://([^:]+):([^@]+)@([^:]+):([0-9]+)/(.+)"
   if [[ $DATABASE_URL =~ $regex ]]; then
-    export PGUSER=${BASH_REMATCH[user]}
-    export PGPASSWORD=${BASH_REMATCH[pass]}
-    export PGHOST=${BASH_REMATCH[host]}
-    export PGPORT=${BASH_REMATCH[port]}
-    export PGDATABASE=${BASH_REMATCH[db]}
+    export PGUSER="${BASH_REMATCH[2]}"
+    export PGPASSWORD="${BASH_REMATCH[3]}"
+    export PGHOST="${BASH_REMATCH[4]}"
+    export PGPORT="${BASH_REMATCH[5]}"
+    export PGDATABASE="${BASH_REMATCH[6]}"
   fi
 fi
 
